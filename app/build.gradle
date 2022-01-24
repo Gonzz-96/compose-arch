@@ -59,6 +59,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
     implementation 'androidx.activity:activity-compose:1.4.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0"
+    implementation "androidx.compose.runtime:runtime-livedata:1.2.0-alpha01"
 
     // room
     def room_version = "2.4.1"
