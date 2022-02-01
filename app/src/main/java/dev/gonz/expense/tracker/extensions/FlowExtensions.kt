@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.map
 
 inline fun <reified T> Flow<*>.castOrError(): Flow<T> {
     return map { item ->
-        item as? T ?: throw UnexpectedResultException("")
+        item as? T ?: throw UnexpectedResultException("Expected ${T::class.simpleName} but ${item!!::class.simpleName} received instead")
     }
 }
 

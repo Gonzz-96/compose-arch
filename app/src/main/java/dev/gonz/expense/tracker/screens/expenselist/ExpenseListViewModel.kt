@@ -1,8 +1,5 @@
 package dev.gonz.expense.tracker.screens.expenselist
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,14 +7,16 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.gonz.expense.tracker.domain.model.Expense
 import dev.gonz.expense.tracker.extensions.castOrError
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
 class ExpenseListViewModel @Inject constructor(
     private val expenseListRepo: ExpenseListRepo,
-): ViewModel() {
+) : ViewModel() {
 
     private val _viewState = MutableLiveData<ExpenseListViewState>(ExpenseListViewState.Loading)
     val viewState: LiveData<ExpenseListViewState>
@@ -30,7 +29,11 @@ class ExpenseListViewModel @Inject constructor(
     private fun fetchExpenses() {
         expenseListRepo.query(ExpenseListSpec.GetAllExpenses)
             .castOrError<ExpenseListResult.AllExpenses>()
-            .map { _viewState.value = ExpenseListViewState.Expenses(it.expenses) }
+            .onEach {
+                delay(2_000L) // TODO simulate expensive operation
+                _viewState.value = ExpenseListViewState.AllExpenses(it.expenses)
+            }
+            .catch { _viewState.value = ExpenseListViewState.Error(it) }
             .launchIn(viewModelScope)
     }
 
@@ -39,5 +42,6 @@ class ExpenseListViewModel @Inject constructor(
 sealed class ExpenseListViewState {
     object Loading : ExpenseListViewState()
 
-    data class Expenses(val expenses: List<Expense>) : ExpenseListViewState()
+    data class AllExpenses(val expenses: List<Expense>) : ExpenseListViewState()
+    data class Error(val error: Throwable) : ExpenseListViewState()
 }
